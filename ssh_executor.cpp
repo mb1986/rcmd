@@ -1,5 +1,8 @@
 #include "ssh_executor.hpp"
 
+#include <iostream>
+#include <stdexcept>
+
 #define sleep(seconds) Sleep((seconds)*1000)
 
 /* constructor */

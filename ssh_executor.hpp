@@ -5,12 +5,6 @@
 #include <winsock2.h>
 
 #include <string>
-#include <iostream>
-#include <stdexcept>
-
-//#include <cstdio>
-//#include <cstdlib>
-//#include <ctype.h>
 
 class SshExecutor {
     public:

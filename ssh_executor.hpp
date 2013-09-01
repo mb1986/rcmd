@@ -8,7 +8,10 @@
 
 class SshExecutor {
     public:
-        SshExecutor(std::string const& /*hostname*/, uint16_t /*port*/, bool /*verbose*/ = false);
+        SshExecutor(std::string const& /*username*/,
+                    std::string const& /*hostname*/,
+                    uint16_t /*port*/,
+                    bool /*verbose*/ = false);
         ~SshExecutor();
 
         bool exec(std::string const& /*cmd*/, std::string const& /*path*/ = std::string());
@@ -24,6 +27,7 @@ class SshExecutor {
         int wait();
 
     private:
+        std::string m_username;
         std::string m_hostname;
         unsigned long m_hostaddr;
         uint16_t m_port;

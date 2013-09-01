@@ -1,12 +1,16 @@
 #include "ssh_executor.hpp"
 
+#include <Shlobj.h>
+
+#include <cstdio>
 #include <iostream>
 #include <stdexcept>
 
 #define sleep(seconds) Sleep((seconds)*1000)
 
 /* constructor */
-SshExecutor::SshExecutor(std::string const& hostname, uint16_t port, bool verbose) :
+SshExecutor::SshExecutor(std::string const& username, std::string const& hostname, uint16_t port, bool verbose) :
+    m_username(username),
     m_hostname(hostname),
     m_port(port),
     m_verbose(verbose) {
@@ -21,6 +25,7 @@ SshExecutor::SshExecutor(std::string const& hostname, uint16_t port, bool verbos
         WSADATA wsadata;
         ::WSAStartup(MAKEWORD(2,0), &wsadata); // 2,2
 
+        //TODO gethostbyname(hostname.c_str());
         m_hostaddr = ::inet_addr(hostname.c_str());
         if (m_hostaddr == INADDR_NONE) {
             throw std::runtime_error("Wrong hostname!");
@@ -124,10 +129,43 @@ bool SshExecutor::connect() {
     while ((rc = ::libssh2_session_handshake(m_session, m_socket)) == LIBSSH2_ERROR_EAGAIN) {
         wait();
     }
-    if (rc != 0) {
+    if (rc) {
 #ifndef NDEBUG
         if (m_verbose) {
             std::cerr << " !!! Session handshake failed (e: " << rc << "/" << ::WSAGetLastError() << ")." << std::endl;
+        }
+#endif//NDEBUG
+        disconnect();
+        return false;
+    }
+
+    // TODO --- known hosts !!!
+
+    TCHAR homePath[MAX_PATH];
+    if (!SUCCEEDED(::SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, homePath))) {
+#ifndef NDEBUG
+        if (m_verbose) {
+            std::cerr << " !!! Retrieving user home directory failed." << std::endl;
+        }
+#endif//NDEBUG
+        disconnect();
+        return false;
+    }
+    char pubKeyPath[MAX_PATH];
+    ::snprintf(pubKeyPath, sizeof(pubKeyPath), "%s%s", homePath, "/.ssh/id_rsa.pub");
+    char privKeyPath[MAX_PATH];
+    ::snprintf(privKeyPath, sizeof(privKeyPath), "%s%s", homePath, "/.ssh/id_rsa");
+#ifndef NDEBUG
+    if (m_verbose) {
+        std::cerr << " --- Authenticating user '" << m_username << "' by public key: '" << pubKeyPath << "'." << std::endl;
+    }
+#endif//NDEBUG
+    while ((rc = ::libssh2_userauth_publickey_fromfile(m_session, m_username.c_str(),
+                    pubKeyPath, privKeyPath, "")) == LIBSSH2_ERROR_EAGAIN);
+    if (rc) {
+#ifndef NDEBUG
+        if (m_verbose) {
+            std::cerr << " !!! Public key authentication failed (e: " << rc << ")." << std::endl;
         }
 #endif//NDEBUG
         disconnect();

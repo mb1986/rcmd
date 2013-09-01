@@ -17,6 +17,7 @@ class SshExecutor {
         bool connect();
         bool tryConnect();
         void disconnect();
+        int wait();
 
     private:
         std::string m_hostname;
@@ -24,6 +25,8 @@ class SshExecutor {
         uint16_t m_port;
         struct sockaddr_in m_sockaddr;
         unsigned int m_socket = INVALID_SOCKET;
+
+        struct timeval m_wait_timeout = {10, 0};
 
         bool m_verbose;
         int m_retry_no = 3;

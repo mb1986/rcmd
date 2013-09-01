@@ -105,11 +105,13 @@ bool SshExecutor::connect() {
         std::cerr << " --- Performing handshake." << std::endl;
     }
 #endif//NDEBUG
-    while ((rc = ::libssh2_session_handshake(m_session, m_socket)) == LIBSSH2_ERROR_EAGAIN);
+    while ((rc = ::libssh2_session_handshake(m_session, m_socket)) == LIBSSH2_ERROR_EAGAIN) {
+        wait();
+    }
     if (rc != 0) {
 #ifndef NDEBUG
         if (m_verbose) {
-            std::cerr << " !!! Session handshake failed." << std::endl;
+            std::cerr << " !!! Session handshake failed (e: " << rc << ")." << std::endl;
         }
 #endif//NDEBUG
         disconnect();
@@ -158,5 +160,39 @@ void SshExecutor::disconnect() {
         closesocket(m_socket);
         m_socket = INVALID_SOCKET;
     }
+}
+
+/* private */
+int SshExecutor::wait() {
+    if (m_socket == INVALID_SOCKET || m_session == nullptr) {
+#ifndef NDEBUG
+        if (m_verbose) {
+            std::cerr << " !!! Can not wait." << std::endl;
+        }
+#endif//NDEBUG
+        return -1;
+    }
+
+    fd_set fd;
+    fd_set *writefd = nullptr;
+    fd_set *readfd = nullptr;
+
+    FD_ZERO(&fd);
+    FD_SET(m_socket, &fd);
+
+    int dir = libssh2_session_block_directions(m_session);
+    if(dir & LIBSSH2_SESSION_BLOCK_INBOUND) {
+        readfd = &fd;
+    }
+    if(dir & LIBSSH2_SESSION_BLOCK_OUTBOUND) {
+        writefd = &fd;
+    }
+
+#ifndef NDEBUG
+    if (m_verbose) {
+        std::cerr << " --- Waiting." << std::endl;
+    }
+#endif//NDEBUG
+    return select(m_socket + 1, readfd, writefd, nullptr, &m_wait_timeout);
 }
 

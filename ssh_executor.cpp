@@ -19,7 +19,7 @@ SshExecutor::SshExecutor(std::string const& hostname, uint16_t port, bool verbos
 #endif//NDEBUG
 
         WSADATA wsadata;
-        WSAStartup(MAKEWORD(2,0), &wsadata); // 2,2
+        ::WSAStartup(MAKEWORD(2,0), &wsadata); // 2,2
 
         m_hostaddr = ::inet_addr(hostname.c_str());
         if (m_hostaddr == INADDR_NONE) {
@@ -48,6 +48,7 @@ SshExecutor::~SshExecutor() {
     }
 #endif//NDEBUG
     ::libssh2_exit();
+    ::WSACleanup();
 }
 
 /* public */
@@ -126,7 +127,7 @@ bool SshExecutor::connect() {
     if (rc != 0) {
 #ifndef NDEBUG
         if (m_verbose) {
-            std::cerr << " !!! Session handshake failed (e: " << rc << ")." << std::endl;
+            std::cerr << " !!! Session handshake failed (e: " << rc << "/" << ::WSAGetLastError() << ")." << std::endl;
         }
 #endif//NDEBUG
         disconnect();

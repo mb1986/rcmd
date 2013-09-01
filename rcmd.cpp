@@ -9,7 +9,7 @@ int main(int argc, char const* argv[]) {
     std::cerr << "CMD: " << cmd << std::endl;
 
     SshExecutor ssh("mb", "192.168.1.202", 22, true);
-    ssh.exec("some command");
+    ssh.exec("uptime");
 
     return 0;
 }

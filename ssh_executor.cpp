@@ -3,6 +3,7 @@
 #include <Shlobj.h>
 
 #include <cstdio>
+#include <sstream>
 #include <iostream>
 #include <stdexcept>
 
@@ -62,10 +63,87 @@ bool SshExecutor::exec(std::string const& cmd, std::string const& path) {
         throw std::runtime_error("Could not connect!");
     }
 
-    // if (path.empty())
+    std::stringstream command;
+    if (!path.empty()) {
+        command << "cd " << path << " && ";
+    }
+    command << cmd;
+
+#ifndef NDEBUG
+    if (m_verbose) {
+        std::cerr << " --- Executing command: '" << cmd << "'." << std::endl;
+    }
+#endif//NDEBUG
+    int rc;
+    while((rc = ::libssh2_channel_exec(m_channel, command.str().c_str())) == LIBSSH2_ERROR_EAGAIN) {
+        wait();
+    }
+    if (rc) {
+#ifndef NDEBUG
+        if (m_verbose) {
+            std::cerr << " !!! Command execution failed (e: " << rc << ")." << std::endl;
+        }
+#endif//NDEBUG
+        disconnect();
+        return false;
+    }
+
+
+    char buffer[4096];
+    int n;
+#ifndef NDEBUG
+    if (m_verbose) {
+        std::cerr << " --- Reading data." << std::endl;
+    }
+#endif//NDEBUG
+    while (true) {
+        while ((n = ::libssh2_channel_read(m_channel, buffer, sizeof(buffer))) == LIBSSH2_ERROR_EAGAIN);
+
+        if (n > 0) {
+            std::cout << std::string(buffer, n) << std::flush;
+        } else if (n == 0) {
+            break;
+        } else {
+#ifndef NDEBUG
+            if (m_verbose) {
+                std::cerr << " !!! Reading failed." << std::endl;
+            }
+#endif//NDEBUG
+            disconnect();
+            return false;
+        }
+    }
+
+#ifndef NDEBUG
+    if (m_verbose) {
+        std::cerr << " --- Reading error data." << std::endl;
+    }
+#endif//NDEBUG
+    while (true) {
+        while ((n = ::libssh2_channel_read_stderr(m_channel, buffer, sizeof(buffer))) == LIBSSH2_ERROR_EAGAIN);
+
+        if (n > 0) {
+            std::cerr << std::string(buffer, n) << std::flush;
+        } else if (n == 0) {
+            break;
+        } else {
+#ifndef NDEBUG
+            if (m_verbose) {
+                std::cerr << " !!! Reading failed." << std::endl;
+            }
+#endif//NDEBUG
+            disconnect();
+            return false;
+        }
+    }
+#ifndef NDEBUG
+    if (m_verbose) {
+        std::cerr << " --- Reading success." << std::endl;
+    }
+#endif//NDEBUG
 
     disconnect();
-    return false;
+    return true;
 }
 
 /* public */

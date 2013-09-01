@@ -13,6 +13,10 @@ class SshExecutor {
 
         bool exec(std::string const& /*cmd*/, std::string const& /*path*/ = std::string());
 
+        void setRetryLimit(uint8_t /*limit*/);
+        void setRetrySleep(uint8_t /*sleep*/);
+        void setRetrySleepAdd(uint8_t /*sleep_add*/);
+
     private:
         bool connect();
         bool tryConnect();
@@ -29,10 +33,9 @@ class SshExecutor {
         struct timeval m_wait_timeout = {10, 0};
 
         bool m_verbose;
-        int m_retry_no = 3;
-        int m_retry_sleep = 1;
-        int m_retry_sleep_add = 1;
-
+        uint8_t m_retry_limit = 3;
+        uint8_t m_retry_sleep = 1;
+        uint8_t m_retry_sleep_add = 1;
 
         LIBSSH2_SESSION* m_session = nullptr;
         LIBSSH2_CHANNEL* m_channel = nullptr;

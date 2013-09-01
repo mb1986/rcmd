@@ -62,6 +62,21 @@ bool SshExecutor::exec(std::string const& cmd, std::string const& path) {
     return false;
 }
 
+/* public */
+void SshExecutor::setRetryLimit(uint8_t limit) {
+    m_retry_limit = limit;
+}
+
+/* public */
+void SshExecutor::setRetrySleep(uint8_t sleep) {
+    m_retry_sleep = sleep;
+}
+
+/* public */
+void SshExecutor::setRetrySleepAdd(uint8_t sleep_add) {
+    m_retry_sleep_add = sleep_add;
+}
+
 /* private */
 bool SshExecutor::connect() {
     int rc;
@@ -123,10 +138,10 @@ bool SshExecutor::connect() {
 
 /* private */
 bool SshExecutor::tryConnect() {
-    int retry_no = m_retry_no;
+    int retry_limit = m_retry_limit;
     int retry_sleep = m_retry_sleep;
     bool connected;
-    while (!(connected = connect()) && (retry_no-- > 0)) {
+    while (!(connected = connect()) && (retry_limit-- > 0)) {
 #ifndef NDEBUG
         if (m_verbose) {
             std::cerr << " === Retrying connection attempt." << std::endl;
@@ -174,8 +189,8 @@ int SshExecutor::wait() {
     }
 
     fd_set fd;
-    fd_set *writefd = nullptr;
-    fd_set *readfd = nullptr;
+    fd_set* writefd = nullptr;
+    fd_set* readfd = nullptr;
 
     FD_ZERO(&fd);
     FD_SET(m_socket, &fd);

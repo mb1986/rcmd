@@ -64,7 +64,7 @@ $(info --- --------------------------------------------------)
 
 CXX = $(COMPILER)
 CXXFLAGS = $(addprefix -I,$(INCLUDE_DIRS)) $(COMPILER_FLAGS)
-LFLAGS = $(addprefix -L,$(LIBRARY_DIRS)) $(addprefix -l,$(LIBRARIES))
+LDFLAGS = $(addprefix -L,$(LIBRARY_DIRS)) $(addprefix -l,$(LIBRARIES))
 
 # === main part
 # ============================================================
@@ -72,7 +72,7 @@ LFLAGS = $(addprefix -L,$(LIBRARY_DIRS)) $(addprefix -l,$(LIBRARIES))
 all: $(EXE_NAME)
 
 $(EXE_NAME): $(OBJS)
-	$(CXX) $^ $(LFLAGS) -o $@
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(@D)

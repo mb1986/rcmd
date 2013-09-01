@@ -8,7 +8,7 @@ int main(int argc, char const* argv[]) {
     //std::string cmd = argv[0];
 
     SshExecutor ssh("mb", "192.168.1.202", 22, true);
-    ssh.exec("uptime");
+    ssh.exec(argv[1]);
 
     return 0;
 }

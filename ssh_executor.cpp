@@ -172,6 +172,25 @@ bool SshExecutor::connect() {
         return false;
     }
 
+#ifndef NDEBUG
+    if (m_verbose) {
+        std::cerr << " --- Opening channel." << std::endl;
+    }
+#endif//NDEBUG
+    while((m_channel = ::libssh2_channel_open_session(m_session)) == nullptr &&
+           ::libssh2_session_last_error(m_session, nullptr, nullptr, 0) == LIBSSH2_ERROR_EAGAIN) {
+        wait();
+    }
+    if(m_channel == nullptr) {
+#ifndef NDEBUG
+        if (m_verbose) {
+            std::cerr << " !!! Chanel open failed." << std::endl;
+        }
+#endif//NDEBUG
+        disconnect();
+        return false;
+    }
+
     return true;
 }
 
@@ -194,6 +213,26 @@ bool SshExecutor::tryConnect() {
 
 /* private */
 void SshExecutor::disconnect() {
+    if (m_channel) {
+#ifndef NDEBUG
+        if (m_verbose) {
+            std::cerr << " --- Closing channel." << std::endl;
+        }
+#endif//NDEBUG
+        while(::libssh2_channel_close(m_channel) == LIBSSH2_ERROR_EAGAIN) {
+            wait();
+        }
+#ifndef NDEBUG
+        if (m_verbose) {
+            std::cerr << " --- Waiting for remote to close channel." << std::endl;
+        }
+#endif//NDEBUG
+        while(::libssh2_channel_wait_closed(m_channel) == LIBSSH2_ERROR_EAGAIN) {
+            wait();
+        }
+        m_channel = nullptr;
+    }
+
     if (m_session) {
 #ifndef NDEBUG
         if (m_verbose) {
@@ -211,7 +250,7 @@ void SshExecutor::disconnect() {
             std::cerr << " --- Closing socket." << std::endl;
         }
 #endif//NDEBUG
-        closesocket(m_socket);
+        ::closesocket(m_socket);
         m_socket = INVALID_SOCKET;
     }
 }

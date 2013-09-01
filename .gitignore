@@ -11,3 +11,16 @@
 *.lai
 *.la
 *.a
+
+# Executable files
+*.exe
+*.com
+*.bat
+*.cmd
+
+# Vim swap files
+.*.swp
+
+# Build directories
+obj/
+dep/

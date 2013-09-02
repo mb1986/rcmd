@@ -81,10 +81,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 include $(DEPS)
 
 $(DEP_DIR)/%.d: $(SRC_DIR)/%.cpp
-	@set -e; rm -f $@; mkdir -p $(@D); \
-	$(CXX) -MT $(OBJ_DIR)/$*.o -MM $(CXXFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -MF $@ -MG -MM -MP -MT $(OBJ_DIR)/$*.o -MT $@ $<
 
 clean:
 	-rm -rf $(EXE_NAME) $(OBJ_DIR) $(DEP_DIR)

@@ -43,8 +43,6 @@ DEP_DIR := dep
 # ============================================================
 
 SRC_DIRS := $(SRC_DIR)/ $(dir $(wildcard $(SRC_DIR)/*/.)) # only one level of subdirs
-DEP_DIRS := $(patsubst $(SRC_DIR)/%,$(DEP_DIR)/%,$(SRC_DIRS))
-OBJ_DIRS := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SRC_DIRS))
 
 SRCS := $(foreach sdir,$(SRC_DIRS),$(wildcard $(sdir)*.cpp))
 DEPS := $(patsubst $(SRC_DIR)/%,$(DEP_DIR)/%,$(SRCS:.cpp=.d))
@@ -54,8 +52,6 @@ $(info --- --------------------------------------------------)
 $(info ---       making | $(EXE_NAME))
 $(info --- --------------------------------------------------)
 $(info ---     src dirs | $(SRC_DIRS))
-$(info ---     dep dirs | $(DEP_DIRS))
-$(info ---     obj dirs | $(OBJ_DIRS))
 $(info ---      sources | $(SRCS))
 $(info --- dependencies | $(DEPS))
 $(info ---      objects | $(OBJS))

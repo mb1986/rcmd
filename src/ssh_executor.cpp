@@ -10,16 +10,16 @@
 #define sleep(seconds) Sleep((seconds)*1000)
 
 /* constructor */
-SshExecutor::SshExecutor(std::string const& username, std::string const& hostname, uint16_t port, bool verbose) :
-    m_username(username),
-    m_hostname(hostname),
-    m_port(port),
+SshExecutor::SshExecutor(Configuration const& configuration, bool verbose) :
+    m_username(configuration.username()),
+    m_hostname(configuration.hostname()),
+    m_port(configuration.port()),
     m_verbose(verbose) {
 
 #ifdef WITH_VERBOSE
         if (m_verbose) {
-            std::cerr << " --- Ssh hostname set to: '" << hostname << "'." << std::endl;
-            std::cerr << " --- Ssh port set to: '" << port << "'." << std::endl;
+            std::cerr << " --- Ssh hostname set to: '" << m_hostname << "'." << std::endl;
+            std::cerr << " --- Ssh port set to: '" << m_port << "'." << std::endl;
         }
 #endif//WITH_VERBOSE
 
@@ -27,7 +27,7 @@ SshExecutor::SshExecutor(std::string const& username, std::string const& hostnam
         ::WSAStartup(MAKEWORD(2,0), &wsadata); // 2,2
 
         //TODO gethostbyname(hostname.c_str());
-        m_hostaddr = ::inet_addr(hostname.c_str());
+        m_hostaddr = ::inet_addr(m_hostname.c_str());
         if (m_hostaddr == INADDR_NONE) {
             throw std::runtime_error("Wrong hostname!");
         }

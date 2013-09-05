@@ -1,13 +1,14 @@
 #include "ssh_executor.hpp"
+#include "configuration.hpp"
 
 #include <string>
 #include <iostream>
 
 int main(int argc, char const* argv[]) {
 
-    //std::string cmd = argv[0];
+    Configuration conf("./.rcmd.yaml");
 
-    SshExecutor ssh("mb", "192.168.1.202", 22, true);
+    SshExecutor ssh(conf, true);
     ssh.exec(argv[1]);
 
     return 0;

@@ -1,6 +1,8 @@
 #ifndef RCMD_SSH_EXECUTOR_HPP
 #define RCMD_SSH_EXECUTOR_HPP
 
+#include "configuration.hpp"
+
 #include <libssh2.h>
 #include <winsock2.h>
 
@@ -8,10 +10,7 @@
 
 class SshExecutor {
     public:
-        SshExecutor(std::string const& /*username*/,
-                    std::string const& /*hostname*/,
-                    uint16_t /*port*/,
-                    bool /*verbose*/ = false);
+        SshExecutor(Configuration const& /*configuration*/, bool /*verbose*/ = false);
         ~SshExecutor();
 
         bool exec(std::string const& /*cmd*/, std::string const& /*path*/ = std::string());

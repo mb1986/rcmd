@@ -29,7 +29,7 @@
 EXE_NAME := rcmd
 
 COMPILER := g++
-COMPILER_FLAGS := -Wall -std=c++11 -DWITH_VERBOSE
+COMPILER_FLAGS := -Wall -std=c++11 #-DWITHOUT_VERBOSE
 
 INCLUDE_DIRS := C:\MinGW\msys\1.0\mingw\include
 LIBRARY_DIRS := C:\MinGW\msys\1.0\mingw\lib

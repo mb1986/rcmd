@@ -8,9 +8,9 @@
 int main(int argc, char const* argv[]) {
 
     CommandBuilder cmd(argc, argv);
-    Configuration conf("./.rcmd.yaml"); // FIXME --- cmd name
+    Configuration conf("./.rcmd.yaml", cmd.command_name());
 
-    SshExecutor ssh(conf, true);
+    SshExecutor ssh(conf);
     ssh.exec(cmd.command());
 
     return 0;

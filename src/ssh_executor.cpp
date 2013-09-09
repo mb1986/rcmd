@@ -10,11 +10,12 @@
 #define sleep(seconds) Sleep((seconds)*1000)
 
 /* constructor */
-SshExecutor::SshExecutor(Configuration const& configuration, bool verbose) :
+SshExecutor::SshExecutor(Configuration const& configuration) :
     m_username(configuration.username()),
     m_hostname(configuration.hostname()),
     m_port(configuration.port()),
-    m_verbose(verbose) {
+    m_directory(configuration.directory()),
+    m_verbose(configuration.verbosity()) {
 
 #ifdef WITH_VERBOSE
         if (m_verbose) {
@@ -58,14 +59,14 @@ SshExecutor::~SshExecutor() {
 }
 
 /* public */
-bool SshExecutor::exec(std::string const& cmd, std::string const& path) {
+bool SshExecutor::exec(std::string const& cmd) {
     if(!tryConnect()) {
         throw std::runtime_error("Could not connect!");
     }
 
     std::stringstream command;
-    if (!path.empty()) {
-        command << "cd " << path << " && ";
+    if (!m_directory.empty()) {
+        command << "cd '" << m_directory << "' && ";
     }
     command << cmd;
 

@@ -9,11 +9,12 @@ class CommandBuilder {
         CommandBuilder(int /*argc*/, char const** /*argv*/);
 
     public:
-        std::string command() const;
+        std::string const& command_name() const;
+        std::string const& command() const;
 
     private:
-        int m_argc;
-        char const** m_argv;
+        std::string m_command_name;
+        std::string m_command;
 };
 
 #endif//RCMD_COMMAND_BUILDER_HPP

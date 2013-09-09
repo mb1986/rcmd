@@ -33,7 +33,7 @@ COMPILER_FLAGS := -Wall -std=c++11 -DWITH_VERBOSE
 
 INCLUDE_DIRS := C:\MinGW\msys\1.0\mingw\include
 LIBRARY_DIRS := C:\MinGW\msys\1.0\mingw\lib
-LIBRARIES := ssh2 ssl crypto ws2_32 gdi32 z
+LIBRARIES := ssh2 ssl crypto ws2_32 gdi32 z yaml-cpp
 
 SRC_DIR := src
 OBJ_DIR := obj

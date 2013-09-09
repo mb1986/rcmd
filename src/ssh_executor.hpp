@@ -10,10 +10,10 @@
 
 class SshExecutor {
     public:
-        SshExecutor(Configuration const& /*configuration*/, bool /*verbose*/ = false);
+        SshExecutor(Configuration const& /*configuration*/);
         ~SshExecutor();
 
-        bool exec(std::string const& /*cmd*/, std::string const& /*path*/ = std::string());
+        bool exec(std::string const& /*cmd*/);
 
         void setRetryLimit(uint8_t /*limit*/);
         void setRetrySleep(uint8_t /*sleep*/);
@@ -30,6 +30,7 @@ class SshExecutor {
         std::string m_hostname;
         unsigned long m_hostaddr;
         uint16_t m_port;
+        std::string m_directory;
         struct sockaddr_in m_sockaddr;
         unsigned int m_socket = INVALID_SOCKET;
 

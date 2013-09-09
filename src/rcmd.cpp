@@ -7,8 +7,10 @@
 
 int main(int argc, char const* argv[]) {
 
+    Configuration conf("./.rcmd.yaml");
     CommandBuilder cmd(argc, argv);
-    Configuration conf("./.rcmd.yaml", cmd.command_name());
+    conf.command_name(cmd.command_name());
+    cmd.map_command_name(conf.map());
 
     SshExecutor ssh(conf);
     ssh.exec(cmd.command());

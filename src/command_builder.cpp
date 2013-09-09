@@ -32,13 +32,14 @@ CommandBuilder::CommandBuilder(int argc, char const** argv) {
     }
 
     {
-        std::stringstream command;
-        command << m_command_name;
+        std::stringstream command_args;
+        command_args << " ";
         for (; argi < argc; ++argi) {
-            command << " " << argv[argi];
+            command_args << " " << argv[argi];
         }
-        m_command = command.str();
+        m_command_args = command_args.str();
     }
+    makeCommand();
 }
 
 /* public */
@@ -49,5 +50,18 @@ std::string const& CommandBuilder::command_name() const {
 /* public */
 std::string const& CommandBuilder::command() const {
     return m_command;
+}
+
+/* public */
+void CommandBuilder::map_command_name(std::string const& new_command_name) {
+    if (!new_command_name.empty()) {
+        m_command_name = new_command_name;
+        makeCommand();
+    }
+}
+
+/* private */
+void CommandBuilder::makeCommand() {
+    m_command = m_command_name + m_command_args;
 }
 

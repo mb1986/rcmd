@@ -12,14 +12,17 @@ class Configuration {
 
     public:
         Configuration() = delete;
-        Configuration(std::string const& /*path*/, std::string const& /*cmd_name*/);
+        Configuration(std::string const& /*path*/);
 
     public:
+        void command_name(std::string const& /*cmd_name*/);
+
         std::string const& username() const;
         std::string const& hostname() const;
         uint16_t port() const;
         std::string const& directory() const;
         env_vars_type const& environment_vars() const;
+        std::string const& map() const;
 
         bool verbosity() const;
 
@@ -27,10 +30,12 @@ class Configuration {
         void parse_config(YAML::Node const&);
 
     private:
+        YAML::Node m_config;
         std::string m_username = "guest"; // FIXME --- logged user name
         std::string m_hostname = "127.0.0.1"; // FIXME --- "localhost"
         uint16_t m_port = 22;
         std::string m_directory;
+        std::string m_map;
 
         env_vars_type m_env_vars;
 

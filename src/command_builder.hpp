@@ -12,8 +12,14 @@ class CommandBuilder {
         std::string const& command_name() const;
         std::string const& command() const;
 
+        void map_command_name(std::string const& /*new_command_name*/);
+
+    private:
+        void makeCommand();
+
     private:
         std::string m_command_name;
+        std::string m_command_args;
         std::string m_command;
 };
 

@@ -1,25 +1,30 @@
 #include "configuration.hpp"
 
 /* constructor */
-Configuration::Configuration(std::string const& path, std::string const& cmd_name) {
+Configuration::Configuration(std::string const& path) {
     try {
-        YAML::Node config = YAML::LoadFile(path);
-        YAML::Node const& config_global = config["global"];
-        YAML::Node const& config_command = config["command"];
-
+        m_config = YAML::LoadFile(path);
+        YAML::Node const& config_global = m_config["global"];
         if (config_global) {
             parse_config(config_global);
         }
+    } catch (YAML::BadFile const&) {
+        // do nothing
+    } catch (YAML::Exception const& ex) {
+        throw std::runtime_error("Configuration file error ('" + ex.msg + "')!");
+    }
+}
 
+/* public */
+void Configuration::command_name(std::string const& cmd_name) {
+    YAML::Node const& config_command = m_config["command"];
+    try {
         if (config_command) {
             YAML::Node const& config_command_node = config_command[cmd_name];
             if (config_command_node) {
                 parse_config(config_command_node);
             }
         }
-
-    } catch (YAML::BadFile const&) {
-        // do nothing
     } catch (YAML::Exception const& ex) {
         throw std::runtime_error("Configuration file error ('" + ex.msg + "')!");
     }
@@ -43,6 +48,11 @@ uint16_t Configuration::port() const {
 /* public */
 std::string const& Configuration::directory() const {
     return m_directory;
+}
+
+/* public */
+std::string const& Configuration::map() const {
+    return m_map;
 }
 
 /* public */
@@ -76,6 +86,9 @@ void Configuration::parse_config(YAML::Node const& node) {
         for (auto const& it : node["env"]) {
             m_env_vars.emplace_back(it.first.as<std::string>(), it.second.as<std::string>());
         }
+    }
+    if (node["map"]) {
+        m_map = node["map"].as<std::string>();
     }
 }
 

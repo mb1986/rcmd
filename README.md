@@ -16,6 +16,6 @@ command:
     g++:
         cd: "dev/"
     pwd:
-        env: [a: "a", b: "b"] # environment variables
+        env: {a: "a", b: "b"} # environment variables
 ```
 

@@ -61,36 +61,28 @@ bool SshExecutor::exec(std::string const& cmd) {
 
     int rc;
 
-    //::libssh2_channel_handle_extended_data(m_channel, LIBSSH2_CHANNEL_EXTENDED_DATA_NORMAL);
+    ::libssh2_channel_handle_extended_data(m_channel, LIBSSH2_CHANNEL_EXTENDED_DATA_NORMAL);
 
-//    while ((rc = ::libssh2_channel_request_pty(m_channel, "vt100")) == LIBSSH2_ERROR_EAGAIN) {
-//        wait();
-//    }
-//    if (rc) {
-//#ifdef WITH_VERBOSE
-//        if (m_conf.verbosity()) {
-//            std::cerr << " !!! Requesting pty failed (e: " << rc << ")." << std::endl;
-//        }
-//#endif//WITH_VERBOSE
-//        disconnect();
-//        return false;
-//    }
-
-    // set environment variables
-//    for (auto const& it : m_conf.environment_vars()) {
-//        while ((rc = ::libssh2_channel_setenv(m_channel, it.first.c_str(), it.second.c_str())) == LIBSSH2_ERROR_EAGAIN) {
-//            wait();
-//        }
-//        if (rc) {
-//#ifdef WITH_VERBOSE
-//            if (m_conf.verbosity()) {
-//                std::cerr << " !!! Environment variable setting failed (e: " << rc << ")." << std::endl;
-//            }
-//#endif//WITH_VERBOSE
-//            disconnect();
-//            return false;
-//        }
-//    }
+#ifdef WITH_VERBOSE
+    if (m_conf.verbosity()) {
+        std::cerr << " --- Setting environment variables." << std::endl;
+    }
+#endif//WITH_VERBOSE
+    for (auto const& it : m_conf.environment_vars()) {
+        while ((rc = ::libssh2_channel_setenv(m_channel, it.first.c_str(), it.second.c_str())) == LIBSSH2_ERROR_EAGAIN) {
+            wait();
+        }
+        if (rc) {
+#ifdef WITH_VERBOSE
+            if (m_conf.verbosity()) {
+                std::cerr << " !!! Environment variable '" << it.first << "' setting failed (e: " << rc << ")." << std::endl;
+                std::cerr << " ^^^ Maybe you should set 'AcceptEnv' in 'sshd_config'." << std::endl;
+            }
+#endif//WITH_VERBOSE
+            disconnect();
+            return false;
+        }
+    }
 
     std::stringstream command;
     if (!m_conf.directory().empty()) {

@@ -16,7 +16,7 @@ Configuration::Configuration(std::string const& path) {
 }
 
 /* public */
-void Configuration::command_name(std::string const& cmd_name) {
+void Configuration::command(std::string const& cmd_name) {
     YAML::Node const& config_command = m_config["command"];
     try {
         if (config_command) {
@@ -51,7 +51,7 @@ std::string const& Configuration::directory() const {
 }
 
 /* public */
-std::string const& Configuration::map() const {
+std::string const& Configuration::command_mapping() const {
     return m_map;
 }
 

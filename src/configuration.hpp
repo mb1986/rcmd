@@ -15,15 +15,14 @@ class Configuration {
         Configuration(std::string const& /*path*/);
 
     public:
-        void command_name(std::string const& /*cmd_name*/);
+        void command(std::string const& /*cmd_name*/);
 
         std::string const& username() const;
         std::string const& hostname() const;
         uint16_t port() const;
         std::string const& directory() const;
         env_vars_type const& environment_vars() const;
-        std::string const& map() const;
-
+        std::string const& command_mapping() const;
         bool verbosity() const;
 
     private:

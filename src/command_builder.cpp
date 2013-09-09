@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 /* constructor */
-CommandBuilder::CommandBuilder(int argc, char const** argv) {
+CommandBuilder::CommandBuilder(int argc, char const** argv, Configuration& conf) {
     if (argc < 1) {
         throw std::runtime_error("argc can not be less than 1!");
     }
@@ -31,15 +31,19 @@ CommandBuilder::CommandBuilder(int argc, char const** argv) {
         m_command_name = cmd_name;
     }
 
-    {
-        std::stringstream command_args;
-        command_args << " ";
-        for (; argi < argc; ++argi) {
-            command_args << " " << argv[argi];
-        }
-        m_command_args = command_args.str();
+    conf.command(m_command_name);
+    if (!conf.command_mapping().empty()) {
+        m_command_name = conf.command_mapping();
     }
-    makeCommand();
+
+    {
+        std::stringstream command;
+        command << m_command_name;
+        for (; argi < argc; ++argi) {
+            command << " " << argv[argi];
+        }
+        m_command = command.str();
+    }
 }
 
 /* public */
@@ -50,18 +54,5 @@ std::string const& CommandBuilder::command_name() const {
 /* public */
 std::string const& CommandBuilder::command() const {
     return m_command;
-}
-
-/* public */
-void CommandBuilder::map_command_name(std::string const& new_command_name) {
-    if (!new_command_name.empty()) {
-        m_command_name = new_command_name;
-        makeCommand();
-    }
-}
-
-/* private */
-void CommandBuilder::makeCommand() {
-    m_command = m_command_name + m_command_args;
 }
 

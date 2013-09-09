@@ -46,6 +46,11 @@ std::string const& Configuration::directory() const {
 }
 
 /* public */
+Configuration::env_vars_type const& Configuration::environment_vars() const {
+    return m_env_vars;
+}
+
+/* public */
 bool Configuration::verbosity() const {
     return m_verbosity;
 }
@@ -66,6 +71,11 @@ void Configuration::parse_config(YAML::Node const& node) {
     }
     if (node["verbose"]) {
         m_verbosity = node["verbose"].as<bool>();
+    }
+    if (node["env"]) {
+        for (auto const& it : node["env"]) {
+            m_env_vars.emplace_back(it.first.as<std::string>(), it.second.as<std::string>());
+        }
     }
 }
 

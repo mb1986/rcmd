@@ -26,17 +26,13 @@ class SshExecutor {
         int wait();
 
     private:
-        std::string m_username;
-        std::string m_hostname;
+        Configuration m_conf;
         unsigned long m_hostaddr;
-        uint16_t m_port;
-        std::string m_directory;
         struct sockaddr_in m_sockaddr;
         unsigned int m_socket = INVALID_SOCKET;
 
         struct timeval m_wait_timeout = {10, 0};
 
-        bool m_verbose;
         uint8_t m_retry_limit = 3;
         uint8_t m_retry_sleep = 1;
         uint8_t m_retry_sleep_add = 1;

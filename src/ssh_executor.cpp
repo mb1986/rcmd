@@ -10,17 +10,12 @@
 #define sleep(seconds) Sleep((seconds)*1000)
 
 /* constructor */
-SshExecutor::SshExecutor(Configuration const& configuration) :
-    m_username(configuration.username()),
-    m_hostname(configuration.hostname()),
-    m_port(configuration.port()),
-    m_directory(configuration.directory()),
-    m_verbose(configuration.verbosity()) {
+SshExecutor::SshExecutor(Configuration const& configuration) : m_conf(configuration) {
 
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
-            std::cerr << " --- Ssh hostname set to: '" << m_hostname << "'." << std::endl;
-            std::cerr << " --- Ssh port set to: '" << m_port << "'." << std::endl;
+        if (m_conf.verbosity()) {
+            std::cerr << " --- Ssh hostname set to: '" << m_conf.hostname() << "'." << std::endl;
+            std::cerr << " --- Ssh port set to: '" << m_conf.port() << "'." << std::endl;
         }
 #endif//WITH_VERBOSE
 
@@ -28,17 +23,17 @@ SshExecutor::SshExecutor(Configuration const& configuration) :
         ::WSAStartup(MAKEWORD(2,0), &wsadata); // 2,2
 
         //TODO gethostbyname(hostname.c_str());
-        m_hostaddr = ::inet_addr(m_hostname.c_str());
+        m_hostaddr = ::inet_addr(m_conf.hostname().c_str());
         if (m_hostaddr == INADDR_NONE) {
             throw std::runtime_error("Wrong hostname!");
         }
 
         m_sockaddr.sin_family = AF_INET;
-        m_sockaddr.sin_port = ::htons(m_port);
+        m_sockaddr.sin_port = ::htons(m_conf.port());
         m_sockaddr.sin_addr.s_addr = m_hostaddr;
 
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " --- Initializing ssh." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -50,7 +45,7 @@ SshExecutor::SshExecutor(Configuration const& configuration) :
 /* destructor */
 SshExecutor::~SshExecutor() {
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Deinitializing ssh." << std::endl;
     }
 #endif//WITH_VERBOSE
@@ -64,24 +59,56 @@ bool SshExecutor::exec(std::string const& cmd) {
         throw std::runtime_error("Could not connect!");
     }
 
+    int rc;
+
+    //::libssh2_channel_handle_extended_data(m_channel, LIBSSH2_CHANNEL_EXTENDED_DATA_NORMAL);
+
+//    while ((rc = ::libssh2_channel_request_pty(m_channel, "vt100")) == LIBSSH2_ERROR_EAGAIN) {
+//        wait();
+//    }
+//    if (rc) {
+//#ifdef WITH_VERBOSE
+//        if (m_conf.verbosity()) {
+//            std::cerr << " !!! Requesting pty failed (e: " << rc << ")." << std::endl;
+//        }
+//#endif//WITH_VERBOSE
+//        disconnect();
+//        return false;
+//    }
+
+    // set environment variables
+//    for (auto const& it : m_conf.environment_vars()) {
+//        while ((rc = ::libssh2_channel_setenv(m_channel, it.first.c_str(), it.second.c_str())) == LIBSSH2_ERROR_EAGAIN) {
+//            wait();
+//        }
+//        if (rc) {
+//#ifdef WITH_VERBOSE
+//            if (m_conf.verbosity()) {
+//                std::cerr << " !!! Environment variable setting failed (e: " << rc << ")." << std::endl;
+//            }
+//#endif//WITH_VERBOSE
+//            disconnect();
+//            return false;
+//        }
+//    }
+
     std::stringstream command;
-    if (!m_directory.empty()) {
-        command << "cd '" << m_directory << "' && ";
+    if (!m_conf.directory().empty()) {
+        command << "cd '" << m_conf.directory() << "' && ";
     }
     command << cmd;
 
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Executing command: '" << cmd << "'." << std::endl;
     }
 #endif//WITH_VERBOSE
-    int rc;
-    while((rc = ::libssh2_channel_exec(m_channel, command.str().c_str())) == LIBSSH2_ERROR_EAGAIN) {
+    while ((rc = ::libssh2_channel_exec(m_channel, command.str().c_str())) == LIBSSH2_ERROR_EAGAIN) {
         wait();
     }
     if (rc) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " !!! Command execution failed (e: " << rc << ")." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -93,7 +120,7 @@ bool SshExecutor::exec(std::string const& cmd) {
     char buffer[4096];
     int n;
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Reading data." << std::endl;
     }
 #endif//WITH_VERBOSE
@@ -106,7 +133,7 @@ bool SshExecutor::exec(std::string const& cmd) {
             break;
         } else {
 #ifdef WITH_VERBOSE
-            if (m_verbose) {
+            if (m_conf.verbosity()) {
                 std::cerr << " !!! Reading failed." << std::endl;
             }
 #endif//WITH_VERBOSE
@@ -116,7 +143,7 @@ bool SshExecutor::exec(std::string const& cmd) {
     }
 
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Reading error data." << std::endl;
     }
 #endif//WITH_VERBOSE
@@ -129,7 +156,7 @@ bool SshExecutor::exec(std::string const& cmd) {
             break;
         } else {
 #ifdef WITH_VERBOSE
-            if (m_verbose) {
+            if (m_conf.verbosity()) {
                 std::cerr << " !!! Reading failed." << std::endl;
             }
 #endif//WITH_VERBOSE
@@ -138,7 +165,7 @@ bool SshExecutor::exec(std::string const& cmd) {
         }
     }
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Reading success." << std::endl;
     }
 #endif//WITH_VERBOSE
@@ -167,7 +194,7 @@ bool SshExecutor::connect() {
     int rc;
 
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Opening socket." << std::endl;
     }
 #endif//WITH_VERBOSE
@@ -175,7 +202,7 @@ bool SshExecutor::connect() {
     rc = ::connect(m_socket, (struct sockaddr*)(&m_sockaddr), sizeof(struct sockaddr_in));
     if (rc != 0) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " !!! Socket connection failed." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -184,14 +211,14 @@ bool SshExecutor::connect() {
     }
 
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Connecting." << std::endl;
     }
 #endif//WITH_VERBOSE
     m_session = ::libssh2_session_init();
     if (!m_session) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " !!! Session initialization failed." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -201,7 +228,7 @@ bool SshExecutor::connect() {
     ::libssh2_session_set_blocking(m_session, 0);
 
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Performing handshake." << std::endl;
     }
 #endif//WITH_VERBOSE
@@ -210,7 +237,7 @@ bool SshExecutor::connect() {
     }
     if (rc) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " !!! Session handshake failed (e: " << rc << "/" << ::WSAGetLastError() << ")." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -223,7 +250,7 @@ bool SshExecutor::connect() {
     TCHAR homePath[MAX_PATH];
     if (!SUCCEEDED(::SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, homePath))) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " !!! Retrieving user home directory failed." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -235,15 +262,15 @@ bool SshExecutor::connect() {
     char privKeyPath[MAX_PATH];
     ::snprintf(privKeyPath, sizeof(privKeyPath), "%s%s", homePath, "/.ssh/id_rsa");
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
-        std::cerr << " --- Authenticating user '" << m_username << "' by public key: '" << pubKeyPath << "'." << std::endl;
+    if (m_conf.verbosity()) {
+        std::cerr << " --- Authenticating user '" << m_conf.username() << "' by public key: '" << pubKeyPath << "'." << std::endl;
     }
 #endif//WITH_VERBOSE
-    while ((rc = ::libssh2_userauth_publickey_fromfile(m_session, m_username.c_str(),
+    while ((rc = ::libssh2_userauth_publickey_fromfile(m_session, m_conf.username().c_str(),
                     pubKeyPath, privKeyPath, "")) == LIBSSH2_ERROR_EAGAIN);
     if (rc) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " !!! Public key authentication failed (e: " << rc << ")." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -252,7 +279,7 @@ bool SshExecutor::connect() {
     }
 
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Opening channel." << std::endl;
     }
 #endif//WITH_VERBOSE
@@ -262,7 +289,7 @@ bool SshExecutor::connect() {
     }
     if(m_channel == nullptr) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " !!! Chanel open failed." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -280,7 +307,7 @@ bool SshExecutor::tryConnect() {
     bool connected;
     while (!(connected = connect()) && (retry_limit-- > 0)) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " === Retrying connection attempt." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -294,7 +321,7 @@ bool SshExecutor::tryConnect() {
 void SshExecutor::disconnect() {
     if (m_channel) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " --- Closing channel." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -302,7 +329,7 @@ void SshExecutor::disconnect() {
             wait();
         }
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " --- Waiting for remote to close channel." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -314,7 +341,7 @@ void SshExecutor::disconnect() {
 
     if (m_session) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " --- Disconnecting." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -325,7 +352,7 @@ void SshExecutor::disconnect() {
 
     if (m_socket != INVALID_SOCKET) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " --- Closing socket." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -338,7 +365,7 @@ void SshExecutor::disconnect() {
 int SshExecutor::wait() {
     if (m_socket == INVALID_SOCKET || m_session == nullptr) {
 #ifdef WITH_VERBOSE
-        if (m_verbose) {
+        if (m_conf.verbosity()) {
             std::cerr << " !!! Can not wait." << std::endl;
         }
 #endif//WITH_VERBOSE
@@ -361,7 +388,7 @@ int SshExecutor::wait() {
     }
 
 #ifdef WITH_VERBOSE
-    if (m_verbose) {
+    if (m_conf.verbosity()) {
         std::cerr << " --- Waiting." << std::endl;
     }
 #endif//WITH_VERBOSE

@@ -26,7 +26,7 @@ class SshExecutor {
         int wait();
 
     private:
-        Configuration m_conf;
+        Configuration const& m_conf;
         unsigned long m_hostaddr;
         struct sockaddr_in m_sockaddr;
         unsigned int m_socket = INVALID_SOCKET;

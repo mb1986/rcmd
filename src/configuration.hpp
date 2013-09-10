@@ -13,6 +13,7 @@ class Configuration {
     public:
         Configuration() = delete;
         Configuration(std::string const& /*path*/);
+        Configuration(Configuration const&) = delete;
 
     public:
         void command(std::string const& /*cmd_name*/);

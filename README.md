@@ -3,6 +3,17 @@ rcmd
 
 Remote command invocation tool.
 
+Usage
+-----
+Let us assume that we want to invoke `ls -l` command on the remote machine. Using `rcmd` one may do that in two different, but similar, ways:
+
+1. Type in local machine command prompt `rcmd ls -l` and hit enter.
+2. Change the name of `rcmd` executable file to `rcmd-ls` (pay attention on _dash_) and after that type `rcmd-ls -l` (remember about _dash_) and hit enter.
+
+It should be noted that the second method may be useful in some cases.
+
+In most cases configuration file **`.rcmd.yaml`** will be needed (described in the next section).
+
 Configuration
 -------------
 Configuration file, named **`.rcmd.yaml`**, may be located in the local machine _working directory_ of executed command.
@@ -39,15 +50,4 @@ command:
         map: "ls -l"
         verbose: false
 ```
-
-Usage
------
-Let us assume that we want to invoke `ls -l` command on the remote machine. Using `rcmd` one may do that in two different, but similar, ways:
-
-1. Type in local machine command prompt `rcmd ls -l` and hit enter.
-2. Change the name of `rcmd` executable file to `rcmd-ls` (pay attention on _dash_) and after that type `rcmd-ls -l` (remember about _dash_) and hit enter.
-
-It should be noted that second method may be useful in some cases.
-
-In most cases configuration file **`.rcmd.yaml`** will be needed.
 

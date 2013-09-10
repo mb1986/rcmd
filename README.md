@@ -5,7 +5,7 @@ Remote command invocation tool.
 
 Configuration
 -------------
-Configuration file, named **`.rcmd.yaml`**, may be located in the _working directory_ of executed command.
+Configuration file, named **`.rcmd.yaml`**, may be located in the local machine _working directory_ of executed command.
 Syntax is imposed by the **YAML** format.
 
 File is divided into two main sections:
@@ -48,4 +48,6 @@ Let us assume that we want to invoke `ls -l` command on the remote machine. Usin
 2. Change the name of `rcmd` executable file to `rcmd-ls` (pay attention on _dash_) and after that type `rcmd-ls -l` (remember about _dash_) and hit enter.
 
 It should be noted that second method may be useful in some cases.
+
+In most cases configuration file **`.rcmd.yaml`** will be needed.
 
